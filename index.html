@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Religious Notes</title>
+
+<style>
+  :root {
+    --bg: #fafafa;
+    --card: #ffffff;
+    --text: #222;
+    --muted: #666;
+    --accent: #2f6f4e;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  header {
+    padding: 1rem;
+    font-weight: 600;
+    text-align: center;
+    background: var(--card);
+    border-bottom: 1px solid #eee;
+  }
+
+  main {
+    padding: 1rem;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+  }
+
+  .tile {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+    cursor: pointer;
+    border: 1px solid #eee;
+  }
+
+  .tile:hover {
+    border-color: var(--accent);
+  }
+
+  .subcats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .subcats button {
+    padding: 0.75rem;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    background: var(--card);
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .subcats button.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .gallery img {
+    width: 100%;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+
+  .list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .list-item {
+    background: var(--card);
+    padding: 1rem;
+    border-radius: 12px;
+    border: 1px solid #eee;
+    cursor: pointer;
+  }
+
+  .list-item h3 {
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .list-item p {
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .detail img {
+    width: 100%;
+    border-radius: 12px;
+    margin: 1rem 0;
+  }
+
+  .back {
+    color: var(--accent);
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    display: inline-block;
+  }
+
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.9);
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .lightbox img {
+    max-width: 95%;
+    max-height: 95%;
+  }
+</style>
+</head>
+
+<body>
+<header id="header">Religious Notes</header>
+<main id="app"></main>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <img id="lightboxImg" />
+</div>
+
+<script>
+const data = {
+  "Imam Ali AS": {
+    Fazail: [
+      "https://via.placeholder.com/600x800?text=Fazail+1",
+      "https://via.placeholder.com/600x800?text=Fazail+2"
+    ],
+    Masaeb: [
+      "https://via.placeholder.com/600x800?text=Masaeb+1"
+    ],
+    Waqeaat: [
+      {
+        title: "Birth in Kaaba",
+        summary: "Only person born inside the Holy Kaaba.",
+        image: "https://via.placeholder.com/600x400",
+        detail: "Detailed description written manually."
+      }
+    ]
+  }
+  // Add remaining Imams using same structure
+};
+
+const imams = [
+  "Imam Ali AS","Imam Hasan AS","Imam Husain AS","Imam Sajjad AS",
+  "Imam Baqir AS","Imam Jafar AS","Imam Moosa AS","Imam Reza AS",
+  "Imam Taqi AS","Imam Naqi AS","Imam Askari AS","Imam Mahdi AS"
+];
+
+const app = document.getElementById("app");
+const header = document.getElementById("header");
+
+function home() {
+  header.textContent = "Religious Notes";
+  app.innerHTML = `
+    <div class="grid">
+      ${imams.map(i => `<div class="tile" onclick="openImam('${i}')">${i}</div>`).join("")}
+    </div>
+  `;
+}
+
+function openImam(name) {
+  header.textContent = name;
+  app.innerHTML = `
+    <span class="back" onclick="home()">← Back</span>
+    <div class="subcats">
+      ${["Fazail","Waqeaat","Masaeb"].map(s =>
+        `<button onclick="openSub('${name}','${s}', this)">${s}</button>`
+      ).join("")}
+    </div>
+    <div id="content"></div>
+  `;
+}
+
+function openSub(imam, sub, btn) {
+  document.querySelectorAll(".subcats button").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+
+  const content = document.getElementById("content");
+  const d = data[imam]?.[sub] || [];
+
+  if (sub === "Waqeaat") {
+    content.innerHTML = `
+      <div class="list">
+        ${d.map((e,i) => `
+          <div class="list-item" onclick="openDetail('${imam}',${i})">
+            <h3>${e.title}</h3>
+            <p>${e.summary}</p>
+          </div>
+        `).join("")}
+      </div>
+    `;
+  } else {
+    content.innerHTML = `
+      <div class="gallery">
+        ${d.map(url => `<img src="${url}" onclick="openLightbox('${url}')" />`).join("")}
+      </div>
+    `;
+  }
+}
+
+function openDetail(imam, index) {
+  const e = data[imam].Waqeaat[index];
+  app.innerHTML = `
+    <span class="back" onclick="openImam('${imam}')">← Back</span>
+    <div class="detail">
+      <h2>${e.title}</h2>
+      ${e.image ? `<img src="${e.image}" />` : ""}
+      <p>${e.detail}</p>
+    </div>
+  `;
+}
+
+function openLightbox(src) {
+  document.getElementById("lightboxImg").src = src;
+  document.getElementById("lightbox").style.display = "flex";
+}
+
+function closeLightbox() {
+  document.getElementById("lightbox").style.display = "none";
+}
+
+home();
+</script>
+</body>
+</html>
